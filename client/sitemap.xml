@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <!-- Homepage -->
+  <url>
+    <loc>https://ownsangeet.com/</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <!-- Gallery Images for Image SEO -->
+    <image:image>
+      <image:loc>https://ownsangeet.com/photos/104545-7-phere-1.jpeg</image:loc>
+      <image:caption>Custom Indian Wedding Songs - 7 Phere Ceremony</image:caption>
+      <image:title>Indian Wedding Song Creation</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ownsangeet.com/photos/Firstbirthday_delhiphotographer_birthdayphotography_photoshoot_photography_delhi_Gurgaon_candid_013.jpg</image:loc>
+      <image:caption>First Birthday Party Custom Songs</image:caption>
+      <image:title>Birthday Celebration Music</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ownsangeet.com/photos/Group-dance-songs-_-WItty-Vows-_-Dream-Diaries.webp</image:loc>
+      <image:caption>Group Dance Performance Custom Music</image:caption>
+      <image:title>Dance Song Creation</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ownsangeet.com/photos/haldi.jpg</image:loc>
+      <image:caption>Haldi Ceremony Traditional Custom Music</image:caption>
+      <image:title>Haldi Song Composition</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ownsangeet.com/photos/ladies-sangeet-gautam-khullar.jpeg</image:loc>
+      <image:caption>Ladies Sangeet Event Custom Songs</image:caption>
+      <image:title>Sangeet Music Creation</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ownsangeet.com/photos/praposal.jpg</image:loc>
+      <image:caption>Romantic Proposal Custom Love Song</image:caption>
+      <image:title>Proposal Song Writing</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ownsangeet.com/photos/special occasion.jpg</image:loc>
+      <image:caption>Special Occasion Celebration Custom Music</image:caption>
+      <image:title>Special Event Song Creation</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ownsangeet.com/photos/8157b39c1e592d34df1e94f97a0173fc.png</image:loc>
+      <image:caption>Custom Event Music Production</image:caption>
+      <image:title>Professional Music Composition</image:title>
+    </image:image>
+  </url>
+
+  <!-- Services Section -->
+  <url>
+    <loc>https://ownsangeet.com/#services</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- About Section -->
+  <url>
+    <loc>https://ownsangeet.com/#about</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Gallery Section -->
+  <url>
+    <loc>https://ownsangeet.com/#gallery</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Testimonials Section -->
+  <url>
+    <loc>https://ownsangeet.com/#testimonials</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- FAQ Section -->
+  <url>
+    <loc>https://ownsangeet.com/#faq</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Contact Section -->
+  <url>
+    <loc>https://ownsangeet.com/#contact</loc>
+    <lastmod>2024-12-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset> 

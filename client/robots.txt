@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Allow: /photos/
+Allow: /audios/
+Sitemap: https://ownsangeet.com/sitemap.xml
+Crawl-delay: 1
+Disallow: /admin/
+Disallow: /*.json$
+Disallow: /api/
+
+User-agent: facebookexternalhit/*
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: / 
