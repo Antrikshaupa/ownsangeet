@@ -1,0 +1,682 @@
+{
+    "name": "OwnSangeet AI Blog Agent - With Memory & Image Search",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "triggerAtHour": 9
+                        }
+                    ]
+                }
+            },
+            "id": "schedule-trigger",
+            "name": "Schedule Trigger - Daily 9 AM IST",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.2,
+            "position": [
+                -1200,
+                300
+            ],
+            "notes": "Runs daily at 9 AM IST"
+        },
+        {
+            "parameters": {},
+            "id": "manual-trigger",
+            "name": "Manual Trigger (Testing)",
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "position": [
+                -1200,
+                100
+            ],
+            "notes": "Use for testing"
+        },
+        {
+            "parameters": {
+                "operation": "read",
+                "options": {}
+            },
+            "id": "memory-read",
+            "name": "📋 Read Blog Topics Memory",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                -1000,
+                200
+            ],
+            "notes": "Stores your blog topic ideas. Edit the 'blog_topics' array to add your topics."
+        },
+        {
+            "parameters": {
+                "jsCode": "// ============================================\n// 📝 BLOG TOPICS MEMORY - ADD YOUR IDEAS HERE!\n// ============================================\n// Add topics you want AI to research and write about.\n// The workflow will pick the most relevant one.\n\nconst blogTopics = [\n  {\n    topic: \"Latest Bollywood songs released\",\n    keywords: [\"bollywood\", \"hindi songs\", \"new releases\"],\n    priority: \"high\",\n    category: \"Music News\"\n  },\n  {\n    topic: \"Trending wedding sangeet songs\",\n    keywords: [\"sangeet\", \"wedding songs\", \"dance songs\"],\n    priority: \"high\",\n    category: \"Wedding Music\"\n  },\n  {\n    topic: \"Best romantic songs for anniversaries\",\n    keywords: [\"anniversary\", \"romantic\", \"love songs\"],\n    priority: \"medium\",\n    category: \"Romantic Music\"\n  },\n  {\n    topic: \"K-pop and international music releases\",\n    keywords: [\"kpop\", \"international\", \"english songs\"],\n    priority: \"medium\",\n    category: \"International Music\"\n  },\n  {\n    topic: \"Birthday song ideas and party music\",\n    keywords: [\"birthday\", \"party songs\", \"celebration\"],\n    priority: \"medium\",\n    category: \"Celebration Music\"\n  },\n  {\n    topic: \"Regional Indian music - Tamil, Telugu, Punjabi hits\",\n    keywords: [\"tamil songs\", \"telugu songs\", \"punjabi music\"],\n    priority: \"low\",\n    category: \"Regional Music\"\n  }\n];\n\n// Generate date info\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\n\nconst formattedDate = yesterday.toISOString().split('T')[0];\nconst readableDate = yesterday.toLocaleDateString('en-US', {\n  weekday: 'long',\n  month: 'long',\n  day: 'numeric',\n  year: 'numeric'\n});\n\nconst shortDate = yesterday.toLocaleDateString('en-US', {\n  month: 'short',\n  day: 'numeric',\n  year: 'numeric'\n});\n\n// Pick topic based on day of week for variety\nconst dayOfWeek = new Date().getDay();\nconst topicIndex = dayOfWeek % blogTopics.length;\nconst selectedTopic = blogTopics[topicIndex];\n\n// Build search queries combining topic with date\nconst searchQueries = [\n  `${selectedTopic.topic} ${formattedDate}`,\n  ...selectedTopic.keywords.map(kw => `${kw} ${formattedDate} India`),\n  `latest music news India ${formattedDate}`,\n  `trending songs ${formattedDate}`\n];\n\n// Image search queries for Unsplash\nconst imageSearchQueries = [\n  \"music concert stage lights\",\n  \"bollywood dance performance\",\n  \"wedding sangeet celebration india\",\n  \"music studio recording\",\n  \"headphones vinyl aesthetic\",\n  \"DJ party celebration\"\n];\n\nreturn {\n  json: {\n    // Date info\n    search_date: formattedDate,\n    readable_date: readableDate,\n    short_date: shortDate,\n    month_year: yesterday.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),\n    \n    // Topic info\n    selected_topic: selectedTopic,\n    all_topics: blogTopics,\n    \n    // Search queries\n    search_queries: searchQueries,\n    image_queries: imageSearchQueries,\n    \n    // Metadata\n    workflow_run_id: `run_${Date.now()}`,\n    timestamp: new Date().toISOString()\n  }\n};"
+            },
+            "id": "memory-topics",
+            "name": "📝 Blog Topics Memory Bank",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -800,
+                200
+            ],
+            "notes": "EDIT THIS NODE to add your blog topics! The AI will rotate through them daily."
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.perplexity.ai/chat/completions",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\n  \"model\": \"sonar\",\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a music research assistant. Provide accurate, detailed information about music releases and trending songs. Include song names, artist names, and brief descriptions.\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"Research the following topic: {{ $json.selected_topic.topic }}\\n\\nDate: {{ $json.readable_date }}\\n\\nSearch for:\\n{{ $json.search_queries.join('\\n') }}\\n\\nProvide:\\n1. Latest songs and releases related to this topic\\n2. Artist names and song titles\\n3. Brief description of each song\\n4. Genre and mood\\n5. Availability on streaming platforms\\n\\nFocus on Indian music scene but include international releases if relevant.\"\n    }\n  ],\n  \"max_tokens\": 3000,\n  \"temperature\": 0.3,\n  \"top_p\": 0.9\n}",
+                "options": {
+                    "response": {
+                        "response": {
+                            "fullResponse": true
+                        }
+                    },
+                    "timeout": 90000
+                }
+            },
+            "id": "perplexity-search",
+            "name": "🔍 Perplexity: Research Topic",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                -600,
+                200
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "REPLACE_WITH_PERPLEXITY_CREDENTIAL_ID",
+                    "name": "Perplexity API Key"
+                }
+            },
+            "notes": "Searches for relevant news based on selected topic"
+        },
+        {
+            "parameters": {
+                "jsCode": "const input = $input.first();\nconst memoryData = $('📝 Blog Topics Memory Bank').first().json;\n\ntry {\n  const responseBody = input.json.body || input.json;\n  let researchContent = '';\n  \n  if (responseBody.choices && responseBody.choices[0]) {\n    researchContent = responseBody.choices[0].message?.content || '';\n  } else if (typeof responseBody === 'string') {\n    researchContent = responseBody;\n  } else {\n    researchContent = JSON.stringify(responseBody);\n  }\n  \n  // Validate content\n  if (researchContent.length < 100) {\n    throw new Error('Research content too short');\n  }\n  \n  return {\n    json: {\n      research_content: researchContent,\n      selected_topic: memoryData.selected_topic,\n      date_data: {\n        search_date: memoryData.search_date,\n        readable_date: memoryData.readable_date,\n        short_date: memoryData.short_date,\n        month_year: memoryData.month_year\n      },\n      image_queries: memoryData.image_queries,\n      content_length: researchContent.length,\n      status: 'success'\n    }\n  };\n  \n} catch (error) {\n  return {\n    json: {\n      research_content: `Topic: ${memoryData.selected_topic.topic}. Research data unavailable, generating content based on topic.`,\n      selected_topic: memoryData.selected_topic,\n      date_data: {\n        search_date: memoryData.search_date,\n        readable_date: memoryData.readable_date,\n        short_date: memoryData.short_date,\n        month_year: memoryData.month_year\n      },\n      image_queries: memoryData.image_queries,\n      content_length: 0,\n      status: 'fallback',\n      error: error.message\n    }\n  };\n}"
+            },
+            "id": "parse-research",
+            "name": "📊 Parse Research Results",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -400,
+                200
+            ]
+        },
+        {
+            "parameters": {
+                "url": "https://api.unsplash.com/search/photos",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpQueryAuth",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "query",
+                            "value": "={{ $json.image_queries[Math.floor(Math.random() * $json.image_queries.length)] }}"
+                        },
+                        {
+                            "name": "per_page",
+                            "value": "5"
+                        },
+                        {
+                            "name": "orientation",
+                            "value": "landscape"
+                        }
+                    ]
+                },
+                "options": {
+                    "timeout": 30000
+                }
+            },
+            "id": "unsplash-search",
+            "name": "🖼️ Unsplash: Search Images",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                -200,
+                100
+            ],
+            "continueOnFail": true,
+            "credentials": {
+                "httpQueryAuth": {
+                    "id": "REPLACE_WITH_UNSPLASH_CREDENTIAL_ID",
+                    "name": "Unsplash API Key"
+                }
+            },
+            "notes": "Fetches high-quality images related to the topic"
+        },
+        {
+            "parameters": {
+                "url": "https://api.pexels.com/v1/search",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "query",
+                            "value": "music concert bollywood india"
+                        },
+                        {
+                            "name": "per_page",
+                            "value": "5"
+                        },
+                        {
+                            "name": "orientation",
+                            "value": "landscape"
+                        }
+                    ]
+                },
+                "options": {
+                    "timeout": 30000
+                }
+            },
+            "id": "pexels-backup",
+            "name": "🖼️ Pexels: Backup Images",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                -200,
+                300
+            ],
+            "continueOnFail": true,
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "REPLACE_WITH_PEXELS_CREDENTIAL_ID",
+                    "name": "Pexels API Key"
+                }
+            },
+            "notes": "Backup image source if Unsplash fails"
+        },
+        {
+            "parameters": {
+                "mode": "combine",
+                "mergeByFields": {},
+                "options": {}
+            },
+            "id": "merge-images",
+            "name": "Merge Image Results",
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3,
+            "position": [
+                0,
+                200
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const items = $input.all();\nconst researchData = $('📊 Parse Research Results').first().json;\n\n// Extract images from both sources\nlet allImages = [];\n\nitems.forEach(item => {\n  // Unsplash images\n  if (item.json?.results) {\n    item.json.results.forEach(img => {\n      if (img.urls?.regular) {\n        allImages.push({\n          url: img.urls.regular,\n          thumb: img.urls.thumb || img.urls.small,\n          alt: img.alt_description || 'Music related image',\n          credit: `Photo by ${img.user?.name || 'Unknown'} on Unsplash`,\n          source: 'unsplash',\n          width: img.width,\n          height: img.height\n        });\n      }\n    });\n  }\n  \n  // Pexels images\n  if (item.json?.photos) {\n    item.json.photos.forEach(img => {\n      if (img.src?.large) {\n        allImages.push({\n          url: img.src.large,\n          thumb: img.src.tiny || img.src.small,\n          alt: img.alt || 'Music related image',\n          credit: `Photo from Pexels by ${img.photographer || 'Unknown'}`,\n          source: 'pexels',\n          width: img.width,\n          height: img.height\n        });\n      }\n    });\n  }\n});\n\n// Select best featured image (prefer landscape, good resolution)\nconst featuredImage = allImages.length > 0 \n  ? allImages[0] \n  : {\n      url: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&h=630&fit=crop',\n      thumb: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400&h=300&fit=crop',\n      alt: 'Music and entertainment',\n      credit: 'Default music image',\n      source: 'default'\n    };\n\n// Get additional images for content\nconst contentImages = allImages.slice(1, 4);\n\nreturn {\n  json: {\n    research_content: researchData.research_content,\n    selected_topic: researchData.selected_topic,\n    date_data: researchData.date_data,\n    featured_image: featuredImage,\n    content_images: contentImages,\n    all_images: allImages,\n    images_found: allImages.length\n  }\n};"
+            },
+            "id": "process-images",
+            "name": "🎨 Process & Select Best Images",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                200,
+                200
+            ],
+            "notes": "Selects the best featured image and content images"
+        },
+        {
+            "parameters": {
+                "modelId": {
+                    "__rl": true,
+                    "mode": "list",
+                    "value": "gemini-1.5-flash"
+                },
+                "messages": {
+                    "values": [
+                        {
+                            "content": "=TOPIC: {{ $json.selected_topic.topic }}\nCATEGORY: {{ $json.selected_topic.category }}\nDATE: {{ $json.date_data.readable_date }}\n\nRESEARCH DATA:\n{{ $json.research_content }}\n\n---\n\nWrite a comprehensive SEO-optimized blog post (1500-2000 words) for OwnSangeet.com - India's premier custom song creation platform for weddings, sangeet, birthdays, and special occasions.\n\nBLOG STRUCTURE:\n\n# 🎵 {{ $json.selected_topic.topic }} - {{ $json.date_data.short_date }} | OwnSangeet\n\n[Engaging intro - 100 words, hook the reader, mention the topic]\n\n## 🔥 Top Highlights\n\n[Overview of what's covered]\n\n---\n\n### 1. [Song/Topic Name]\n**Details:** Genre | Artist | Platform\n\n🎤 **About:** [2-3 paragraphs]\n\n💫 **Why It's Special:**\n- Point 1\n- Point 2\n- Point 3\n\n🎧 **Listen On:** Spotify, Apple Music, YouTube Music, JioSaavn\n\n💡 **OwnSangeet Tip:** [Connect to custom song services]\n\n---\n\n[Repeat for 4-5 items]\n\n## 📊 Category Breakdown\n\n[Analysis by genre/type]\n\n## 🎯 Trending Themes\n\n[Connect to celebration trends]\n\n## 💍 Create Your Custom Song\n\n**At OwnSangeet, we specialize in:**\n- ✨ Custom sangeet songs with Bollywood vibes\n- 🎶 Personalized anniversary melodies\n- 🎉 Birthday anthems with your story\n- 💕 Romantic proposal songs\n- 🎊 Corporate jingles and event music\n\n👉 **[Get Your Custom Song →](https://ownsangeet.com)**\n\n## ❓ FAQs\n\n### Q1: [Relevant question]?\n[Answer]\n\n### Q2: [Relevant question]?\n[Answer]\n\n### Q3: [Relevant question]?\n[Answer]\n\n## 🎵 Conclusion\n\n[100 words recap + strong CTA]\n\n---\n\n*Ready for your personalized song? [Visit OwnSangeet →](https://ownsangeet.com)*\n\n---\n\nSEO REQUIREMENTS:\n- Primary keyword: \"{{ $json.selected_topic.topic }}\"\n- Secondary keywords: {{ $json.selected_topic.keywords.join(', ') }}\n- Include keywords in title, H2s, first paragraph, conclusion\n- Use short paragraphs\n- Include emojis in headers\n- Natural internal linking to OwnSangeet services\n- Meta-friendly structure"
+                        }
+                    ]
+                },
+                "options": {
+                    "systemMessage": "You are a professional music journalist and SEO content specialist writing for OwnSangeet.com, India's leading custom song creation platform. Create engaging, SEO-optimized blog content that:\n1. Provides valuable music information\n2. Ranks well on Google India\n3. Naturally promotes OwnSangeet's custom song services\n4. Connects music trends to weddings, celebrations, and special occasions\n\nWrite in a friendly, informative tone. Use proper markdown formatting.",
+                    "maxOutputTokens": 4000,
+                    "temperature": 0.7,
+                    "topP": 0.95
+                }
+            },
+            "id": "gemini-write",
+            "name": "✍️ Gemini: Write Blog Content",
+            "type": "@n8n/n8n-nodes-langchain.googleGemini",
+            "typeVersion": 1,
+            "position": [
+                400,
+                200
+            ],
+            "credentials": {
+                "googleGeminiApi": {
+                    "id": "REPLACE_WITH_GEMINI_CREDENTIAL_ID",
+                    "name": "Google Gemini API"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const geminiResponse = $input.first();\nconst imageData = $('🎨 Process & Select Best Images').first().json;\n\n// Extract blog content\nlet blogContent = '';\ntry {\n  const response = geminiResponse.json;\n  if (response.content) {\n    blogContent = response.content;\n  } else if (response.text) {\n    blogContent = response.text;\n  } else if (response.candidates && response.candidates[0]) {\n    blogContent = response.candidates[0].content?.parts?.[0]?.text || '';\n  } else if (typeof response === 'string') {\n    blogContent = response;\n  } else {\n    blogContent = JSON.stringify(response);\n  }\n} catch (e) {\n  blogContent = 'Blog content generation failed. Please try again.';\n}\n\n// Insert featured image at the top of content after the title\nif (imageData.featured_image.url) {\n  const imageMarkdown = `\\n\\n![${imageData.featured_image.alt}](${imageData.featured_image.url})\\n*${imageData.featured_image.credit}*\\n\\n`;\n  // Insert after first heading\n  blogContent = blogContent.replace(/(# .+\\n)/, `$1${imageMarkdown}`);\n}\n\n// Insert additional images throughout content\nif (imageData.content_images && imageData.content_images.length > 0) {\n  let imgIndex = 0;\n  blogContent = blogContent.replace(/(### \\d+\\..+\\n)/g, (match) => {\n    if (imageData.content_images[imgIndex]) {\n      const img = imageData.content_images[imgIndex];\n      imgIndex++;\n      return `${match}\\n![${img.alt}](${img.url})\\n*${img.credit}*\\n\\n`;\n    }\n    return match;\n  });\n}\n\n// Generate SEO metadata\nconst dateData = imageData.date_data;\nconst topic = imageData.selected_topic;\n\nconst slug = `${topic.topic.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${dateData.search_date}`;\nconst title = `${topic.topic} - ${dateData.short_date} | OwnSangeet`;\nconst excerpt = `Discover ${topic.topic.toLowerCase()} on ${dateData.readable_date}. From Bollywood to international hits, find the perfect inspiration for your custom song at OwnSangeet.`;\nconst tags = `${topic.keywords.join(', ')}, Music News, ${dateData.month_year}, OwnSangeet, Custom Songs`;\n\nreturn {\n  json: {\n    // Blog post data\n    title: title,\n    slug: slug,\n    content: blogContent,\n    excerpt: excerpt,\n    tags: tags,\n    featuredImageUrl: imageData.featured_image.url,\n    \n    // Metadata\n    topic: topic,\n    date_data: dateData,\n    images_used: {\n      featured: imageData.featured_image,\n      content: imageData.content_images\n    },\n    \n    // Stats\n    content_length: blogContent.length,\n    word_count: blogContent.split(/\\s+/).length,\n    generated_at: new Date().toISOString()\n  }\n};"
+            },
+            "id": "format-post",
+            "name": "📦 Format Final Blog Post",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                600,
+                200
+            ],
+            "notes": "Combines content with images and generates SEO metadata"
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "={{ $env.OWNSANGEET_API_URL || 'https://api.ownsangeet.com' }}/api/v1/webhooks/blog-generation",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={\n  \"title\": {{ JSON.stringify($json.title) }},\n  \"slug\": {{ JSON.stringify($json.slug) }},\n  \"content\": {{ JSON.stringify($json.content) }},\n  \"excerpt\": {{ JSON.stringify($json.excerpt) }},\n  \"tags\": {{ JSON.stringify($json.tags) }},\n  \"featuredImageUrl\": {{ JSON.stringify($json.featuredImageUrl) }}\n}",
+                "options": {
+                    "response": {
+                        "response": {
+                            "fullResponse": true
+                        }
+                    },
+                    "timeout": 60000
+                }
+            },
+            "id": "publish-api",
+            "name": "🚀 Publish to OwnSangeet",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                800,
+                200
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "REPLACE_WITH_OWNSANGEET_CREDENTIAL_ID",
+                    "name": "OwnSangeet API Key"
+                }
+            },
+            "notes": "Posts blog with featured image to OwnSangeet API"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "loose"
+                    },
+                    "conditions": [
+                        {
+                            "id": "success-check",
+                            "leftValue": "={{ $json.statusCode }}",
+                            "rightValue": 201,
+                            "operator": {
+                                "type": "number",
+                                "operation": "equals"
+                            }
+                        }
+                    ],
+                    "combinator": "or"
+                },
+                "options": {}
+            },
+            "id": "check-success",
+            "name": "✅ Check Success?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                1000,
+                200
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const publishResponse = $input.first().json;\nconst blogData = $('📦 Format Final Blog Post').first().json;\n\nconst responseBody = publishResponse.body || publishResponse;\nconst postData = responseBody.post || responseBody;\n\nreturn {\n  json: {\n    status: '✅ SUCCESS',\n    post_id: postData.id,\n    post_title: postData.title || blogData.title,\n    post_slug: postData.slug || blogData.slug,\n    post_url: `https://ownsangeet.com/blog/${postData.slug || blogData.slug}`,\n    featured_image: blogData.featuredImageUrl,\n    topic: blogData.topic.topic,\n    category: blogData.topic.category,\n    word_count: blogData.word_count,\n    published_at: new Date().toISOString()\n  }\n};"
+            },
+            "id": "success-data",
+            "name": "📗 Success Data",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1200,
+                100
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const input = $input.first().json;\nconst blogData = $('📦 Format Final Blog Post').first().json;\n\nreturn {\n  json: {\n    status: '❌ FAILED',\n    error: input.message || input.error || 'API publish failed',\n    status_code: input.statusCode || 'unknown',\n    attempted_title: blogData.title,\n    attempted_slug: blogData.slug,\n    topic: blogData.topic.topic,\n    failed_at: new Date().toISOString(),\n    recommendation: 'Check API key and server status'\n  }\n};"
+            },
+            "id": "error-data",
+            "name": "📕 Error Data",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1200,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "url": "https://www.google.com/ping",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "sitemap",
+                            "value": "https://ownsangeet.com/sitemap.xml"
+                        }
+                    ]
+                },
+                "options": {
+                    "timeout": 30000
+                }
+            },
+            "id": "ping-google",
+            "name": "🔔 Ping Google",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1400,
+                0
+            ],
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "url": "https://www.bing.com/ping",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "sitemap",
+                            "value": "https://ownsangeet.com/sitemap.xml"
+                        }
+                    ]
+                },
+                "options": {
+                    "timeout": 30000
+                }
+            },
+            "id": "ping-bing",
+            "name": "🔔 Ping Bing",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                1400,
+                200
+            ],
+            "continueOnFail": true
+        },
+        {
+            "parameters": {
+                "jsCode": "const successData = $('📗 Success Data').first().json;\n\nconsole.log('\\n✅ BLOG PUBLISHED SUCCESSFULLY!');\nconsole.log('================================');\nconsole.log('Title:', successData.post_title);\nconsole.log('URL:', successData.post_url);\nconsole.log('Topic:', successData.topic);\nconsole.log('Category:', successData.category);\nconsole.log('Word Count:', successData.word_count);\nconsole.log('Published At:', successData.published_at);\nconsole.log('================================\\n');\n\nreturn {\n  json: {\n    ...successData,\n    search_engines_notified: ['Google', 'Bing'],\n    workflow_completed_at: new Date().toISOString()\n  }\n};"
+            },
+            "id": "final-success",
+            "name": "🎉 Workflow Complete",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1600,
+                100
+            ]
+        }
+    ],
+    "connections": {
+        "Schedule Trigger - Daily 9 AM IST": {
+            "main": [
+                [
+                    {
+                        "node": "📋 Read Blog Topics Memory",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Manual Trigger (Testing)": {
+            "main": [
+                [
+                    {
+                        "node": "📋 Read Blog Topics Memory",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "📋 Read Blog Topics Memory": {
+            "main": [
+                [
+                    {
+                        "node": "📝 Blog Topics Memory Bank",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "📝 Blog Topics Memory Bank": {
+            "main": [
+                [
+                    {
+                        "node": "🔍 Perplexity: Research Topic",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🔍 Perplexity: Research Topic": {
+            "main": [
+                [
+                    {
+                        "node": "📊 Parse Research Results",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "📊 Parse Research Results": {
+            "main": [
+                [
+                    {
+                        "node": "🖼️ Unsplash: Search Images",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "🖼️ Pexels: Backup Images",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🖼️ Unsplash: Search Images": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Image Results",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🖼️ Pexels: Backup Images": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Image Results",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "Merge Image Results": {
+            "main": [
+                [
+                    {
+                        "node": "🎨 Process & Select Best Images",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🎨 Process & Select Best Images": {
+            "main": [
+                [
+                    {
+                        "node": "✍️ Gemini: Write Blog Content",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "✍️ Gemini: Write Blog Content": {
+            "main": [
+                [
+                    {
+                        "node": "📦 Format Final Blog Post",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "📦 Format Final Blog Post": {
+            "main": [
+                [
+                    {
+                        "node": "🚀 Publish to OwnSangeet",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🚀 Publish to OwnSangeet": {
+            "main": [
+                [
+                    {
+                        "node": "✅ Check Success?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "✅ Check Success?": {
+            "main": [
+                [
+                    {
+                        "node": "📗 Success Data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "📕 Error Data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "📗 Success Data": {
+            "main": [
+                [
+                    {
+                        "node": "🔔 Ping Google",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "🔔 Ping Bing",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🔔 Ping Google": {
+            "main": [
+                [
+                    {
+                        "node": "🎉 Workflow Complete",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "🔔 Ping Bing": {
+            "main": [
+                [
+                    {
+                        "node": "🎉 Workflow Complete",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "settings": {
+        "executionOrder": "v1",
+        "saveManualExecutions": true,
+        "saveExecutionProgress": true
+    },
+    "staticData": null,
+    "meta": {
+        "templateCredsSetupCompleted": false,
+        "instanceId": "ownsangeet-blog-agent-v2"
+    },
+    "tags": [
+        {
+            "name": "blog-automation"
+        },
+        {
+            "name": "ownsangeet"
+        },
+        {
+            "name": "ai-content"
+        }
+    ]
+}

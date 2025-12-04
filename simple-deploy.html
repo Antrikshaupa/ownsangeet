@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Own Sangeet - Music & Entertainment</title>
+    <meta name="description" content="Own Sangeet - Your destination for music and entertainment">
+    
+    <!-- Tailwind CSS CDN for quick deployment -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom styles -->
+    <style>
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .crazy-element {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 250%;
+            height: 250%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: conic-gradient(from 0deg at 50% 50%, #ff0080, #ff8c00, #40e0d0, #ff0080);
+            animation: spin 10s linear infinite;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(45deg, #ff0080, #ff8c00, #40e0d0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 min-h-screen text-white">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold gradient-text">Own Sangeet</h1>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#home" class="hover:text-purple-300 transition-colors">Home</a>
+                    <a href="#music" class="hover:text-purple-300 transition-colors">Music</a>
+                    <a href="#about" class="hover:text-purple-300 transition-colors">About</a>
+                    <a href="#contact" class="hover:text-purple-300 transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative min-h-screen flex items-center justify-center overflow-hidden">
+        <div class="crazy-element"></div>
+        <div class="text-center z-10 px-6">
+            <h1 class="text-6xl md:text-8xl font-bold mb-6 gradient-text">
+                Own Sangeet
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
+                Experience music like never before. Your personal soundtrack to life.
+            </p>
+            <div class="space-x-4">
+                <button class="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-3 rounded-full font-semibold hover:scale-105 transition-transform">
+                    Start Listening
+                </button>
+                <button class="border border-white px-8 py-3 rounded-full font-semibold hover:bg-white hover:text-black transition-colors">
+                    Learn More
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Music Section -->
+    <section id="music" class="py-20 px-6">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12 gradient-text">Featured Music</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass-effect p-6 rounded-lg hover:scale-105 transition-transform">
+                    <div class="w-full h-48 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg mb-4"></div>
+                    <h3 class="text-xl font-semibold mb-2">Latest Hits</h3>
+                    <p class="text-gray-300">Discover the newest tracks trending now</p>
+                </div>
+                <div class="glass-effect p-6 rounded-lg hover:scale-105 transition-transform">
+                    <div class="w-full h-48 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg mb-4"></div>
+                    <h3 class="text-xl font-semibold mb-2">Classic Collection</h3>
+                    <p class="text-gray-300">Timeless music that never gets old</p>
+                </div>
+                <div class="glass-effect p-6 rounded-lg hover:scale-105 transition-transform">
+                    <div class="w-full h-48 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg mb-4"></div>
+                    <h3 class="text-xl font-semibold mb-2">Indie Favorites</h3>
+                    <p class="text-gray-300">Hidden gems from independent artists</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 px-6 bg-black bg-opacity-20">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-8 gradient-text">About Own Sangeet</h2>
+            <p class="text-xl max-w-3xl mx-auto leading-relaxed">
+                Own Sangeet is more than just a music platform. We're a community of music lovers, 
+                artists, and creators who believe in the power of music to connect, inspire, and transform lives. 
+                Join us on this incredible journey through sound.
+            </p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 px-6">
+        <div class="container mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12 gradient-text">Get In Touch</h2>
+            <div class="max-w-2xl mx-auto">
+                <form class="glass-effect p-8 rounded-lg">
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold mb-2">Name</label>
+                        <input type="text" class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-10 border border-white border-opacity-20 focus:outline-none focus:border-purple-400">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold mb-2">Email</label>
+                        <input type="email" class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-10 border border-white border-opacity-20 focus:outline-none focus:border-purple-400">
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold mb-2">Message</label>
+                        <textarea rows="4" class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-10 border border-white border-opacity-20 focus:outline-none focus:border-purple-400"></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 py-3 rounded-lg font-semibold hover:scale-105 transition-transform">
+                        Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 px-6 border-t border-white border-opacity-20">
+        <div class="container mx-auto text-center">
+            <p class="text-gray-400">&copy; 2024 Own Sangeet. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript for smooth scrolling -->
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add some interactive effects
+        document.addEventListener('mousemove', (e) => {
+            const cursor = document.querySelector('.crazy-element');
+            if (cursor) {
+                const x = e.clientX / window.innerWidth;
+                const y = e.clientY / window.innerHeight;
+                cursor.style.transform = `translate(-50%, -50%) rotate(${x * 360}deg) scale(${1 + y * 0.2})`;
+            }
+        });
+    </script>
+</body>
+</html>
