@@ -43,7 +43,7 @@ export default function BlogPost() {
     useEffect(() => {
         if (!slug) return;
 
-        fetch(`http://localhost:5000/api/v1/blogs/${slug}`)
+        fetch(`/api/v1/blogs/${slug}`)
             .then(res => {
                 if (!res.ok) throw new Error('Post not found');
                 return res.json();

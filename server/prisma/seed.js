@@ -1,5 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcryptjs';
+const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 
 const prisma = new PrismaClient();
 
@@ -27,7 +27,6 @@ async function main() {
     }
 
     // 2. Seed Pages (Home Page Content)
-    // We will structure the Home Page content as a JSON block
     const homePageContent = {
         blocks: [
             {

@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Link } from 'react-router';
 import { useState, useRef, useEffect } from 'react';
 
@@ -56,21 +55,16 @@ export default function TrendingSection({ posts }: TrendingSectionProps) {
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <motion.h2
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
+                    <h2
                         className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent"
                     >
                         🔥 Trending Now
-                    </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
+                    </h2>
+                    <p
                         className="text-gray-600 mt-2"
                     >
                         Most popular blogs this week
-                    </motion.p>
+                    </p>
                 </div>
 
                 {/* Scroll Buttons */}
@@ -79,8 +73,8 @@ export default function TrendingSection({ posts }: TrendingSectionProps) {
                         onClick={() => scroll('left')}
                         disabled={!canScrollLeft}
                         className={`p-3 rounded-full transition-all ${canScrollLeft
-                                ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             }`}
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,8 +85,8 @@ export default function TrendingSection({ posts }: TrendingSectionProps) {
                         onClick={() => scroll('right')}
                         disabled={!canScrollRight}
                         className={`p-3 rounded-full transition-all ${canScrollRight
-                                ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg'
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                             }`}
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,11 +106,8 @@ export default function TrendingSection({ posts }: TrendingSectionProps) {
                 }}
             >
                 {posts.map((post, index) => (
-                    <motion.div
+                    <div
                         key={post.id}
-                        initial={{ opacity: 0, x: 50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: index * 0.1 }}
                         className="flex-none w-80 md:w-96 snap-start"
                     >
                         <Link to={`/blog/${post.slug}`}>
@@ -175,7 +166,7 @@ export default function TrendingSection({ posts }: TrendingSectionProps) {
                                 </div>
                             </div>
                         </Link>
-                    </motion.div>
+                    </div>
                 ))}
             </div>
         </section>

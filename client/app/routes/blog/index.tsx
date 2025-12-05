@@ -36,29 +36,42 @@ interface BlogPost {
     viewCount: number;
 }
 
+import { useLoaderData } from 'react-router';
+import type { LoaderFunctionArgs } from 'react-router';
+
+export async function loader({ request }: LoaderFunctionArgs) {
+    const baseUrl = process.env.NODE_ENV === 'production'
+        ? 'http://127.0.0.1:5001/api/v1'
+        : 'http://localhost:5000/api/v1';
+
+    try {
+        const [postsRes, trendingRes] = await Promise.all([
+            fetch(`${baseUrl}/blogs`, { cache: 'no-store' }),
+            fetch(`${baseUrl}/blogs/trending?limit=5`, { cache: 'no-store' })
+        ]);
+
+        if (!postsRes.ok || !trendingRes.ok) {
+            throw new Error('Failed to fetch blog data');
+        }
+
+        const posts = await postsRes.json();
+        const trending = await trendingRes.json();
+
+        return { posts, trending };
+    } catch (error) {
+        console.error('Loader error:', error);
+        return { posts: [], trending: [] };
+    }
+}
+
 export default function BlogList() {
-    const [allPosts, setAllPosts] = useState<BlogPost[]>([]);
-    const [trendingPosts, setTrendingPosts] = useState<BlogPost[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { posts: initialPosts, trending: initialTrending } = useLoaderData<typeof loader>();
+    console.log('BlogList Render:', { initialPosts, initialTrending });
+    const [allPosts, setAllPosts] = useState<BlogPost[]>(initialPosts);
+    const [trendingPosts, setTrendingPosts] = useState<BlogPost[]>(initialTrending);
+    const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedTag, setSelectedTag] = useState<string | null>(null);
-
-    // Fetch all posts
-    useEffect(() => {
-        Promise.all([
-            fetch('http://localhost:5000/api/v1/blogs').then(res => res.json()),
-            fetch('http://localhost:5000/api/v1/blogs/trending?limit=5').then(res => res.json())
-        ])
-            .then(([posts, trending]) => {
-                setAllPosts(posts);
-                setTrendingPosts(trending);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-    }, []);
 
     // Get all unique tags
     const allTags = useMemo(() => {
@@ -127,7 +140,10 @@ export default function BlogList() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50">
+        <div
+            className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50"
+            suppressHydrationWarning
+        >
             {/* Hero Header */}
             <section className="relative pt-32 pb-20 px-6 overflow-hidden">
                 {/* Animated Background Elements */}
@@ -211,56 +227,46 @@ export default function BlogList() {
                 )}
 
                 {/* Blog Posts Grid */}
-                <AnimatePresence mode="wait">
-                    {filteredPosts.length > 0 ? (
-                        <motion.div
-                            key="posts-grid"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-                        >
-                            {filteredPosts.map((post, index) => (
-                                <BlogCard key={post.id} post={post} index={index} />
-                            ))}
-                        </motion.div>
-                    ) : (
-                        <motion.div
-                            key="empty-state"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className="text-center py-20"
-                        >
-                            <div className="max-w-md mx-auto">
-                                <div className="w-32 h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <svg className="w-16 h-16 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </div>
-                                <h3 className="text-2xl font-bold text-gray-800 mb-3">No posts found</h3>
-                                <p className="text-gray-600 mb-6">
-                                    {searchQuery
-                                        ? `We couldn't find any posts matching "${searchQuery}"`
-                                        : selectedTag
-                                            ? `No posts found for tag "${selectedTag}"`
-                                            : "No blog posts available yet"}
-                                </p>
-                                {(searchQuery || selectedTag) && (
-                                    <button
-                                        onClick={() => {
-                                            setSearchQuery('');
-                                            setSelectedTag(null);
-                                        }}
-                                        className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full hover:shadow-lg transition-all"
-                                    >
-                                        Clear filters
-                                    </button>
-                                )}
+                {filteredPosts.length > 0 ? (
+                    <div
+                        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+                    >
+                        {filteredPosts.map((post, index) => (
+                            <BlogCard key={post.id} post={post} index={index} />
+                        ))}
+                    </div>
+                ) : (
+                    <div
+                        className="text-center py-20"
+                    >
+                        <div className="max-w-md mx-auto">
+                            <div className="w-32 h-32 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <svg className="w-16 h-16 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            <h3 className="text-2xl font-bold text-gray-800 mb-3">No posts found</h3>
+                            <p className="text-gray-600 mb-6">
+                                {searchQuery
+                                    ? `We couldn't find any posts matching "${searchQuery}"`
+                                    : selectedTag
+                                        ? `No posts found for tag "${selectedTag}"`
+                                        : "No blog posts available yet"}
+                            </p>
+                            {(searchQuery || selectedTag) && (
+                                <button
+                                    onClick={() => {
+                                        setSearchQuery('');
+                                        setSelectedTag(null);
+                                    }}
+                                    className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full hover:shadow-lg transition-all"
+                                >
+                                    Clear filters
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Custom Styles for Animations */}

@@ -21,7 +21,7 @@ export function ContactForm({ onClose }: { onClose: () => void }) {
     setSubmitting(true);
 
     try {
-      const response = await fetch('http://localhost:5000/api/v1/inquiries', {
+      const response = await fetch('/api/v1/inquiries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

@@ -4,7 +4,7 @@ import { showToast } from '~/components/Toast';
 import Spinner from '~/components/Spinner';
 import { adminFetch } from '~/utils/csrf';
 
-const API_BASE = 'http://localhost:5000/api/v1';
+const API_BASE = '/api/v1';
 
 export default function BlogForm() {
     const { id } = useParams();

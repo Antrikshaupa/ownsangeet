@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import { showToast } from '~/components/Toast';
 import Spinner from '~/components/Spinner';
 
-const API_BASE = 'http://localhost:5000/api/v1';
+const API_BASE = '/api/v1';
 
 export default function BlogsListAdmin() {
     const [blogs, setBlogs] = useState<any[]>([]);

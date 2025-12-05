@@ -3,14 +3,17 @@
         "target": "es2020",
         "module": "commonjs",
         "outDir": "./dist",
-        "rootDir": "./src",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "forceConsistentCasingInFileNames": true
+        "forceConsistentCasingInFileNames": true,
+        "types": [
+            "node"
+        ]
     },
     "include": [
-        "src/**/*"
+        "src/**/*",
+        "prisma/**/*"
     ],
     "exclude": [
         "node_modules"

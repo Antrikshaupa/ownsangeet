@@ -1,6 +1,5 @@
-import { motion } from 'framer-motion';
 import { Link } from 'react-router';
-import { useState } from 'react';
+
 
 interface BlogPost {
     id: string;
@@ -19,44 +18,28 @@ interface BlogCardProps {
 }
 
 export default function BlogCard({ post, index = 0 }: BlogCardProps) {
-    const [imageLoaded, setImageLoaded] = useState(false);
     const tags = post.tags ? post.tags.split(',').slice(0, 2) : [];
 
     // Calculate read time (rough estimate: 200 words per minute)
     const readTime = Math.max(1, Math.ceil(post.excerpt.split(' ').length / 50));
 
-    // Format date
-    const formattedDate = new Date(post.publishedAt).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
+    // Format date (consistent for SSR/CSR)
+    const formattedDate = new Date(post.publishedAt).toISOString().split('T')[0];
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            whileHover={{ y: -8 }}
-            className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500"
+        <div
+            className="group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
         >
             <Link to={`/blog/${post.slug}`} className="block">
                 {/* Featured Image with Gradient Overlay */}
                 <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100">
                     {post.featuredImageUrl && (
-                        <>
-                            <img
-                                src={post.featuredImageUrl}
-                                alt={post.title}
-                                className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-110 ${imageLoaded ? 'opacity-100' : 'opacity-0'
-                                    }`}
-                                onLoad={() => setImageLoaded(true)}
-                                loading="lazy"
-                            />
-                            {!imageLoaded && (
-                                <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-purple-200 to-pink-200" />
-                            )}
-                        </>
+                        <img
+                            src={post.featuredImageUrl}
+                            alt={post.title}
+                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                            loading="lazy"
+                        />
                     )}
 
                     {/* Gradient Overlay */}
@@ -122,6 +105,6 @@ export default function BlogCard({ post, index = 0 }: BlogCardProps) {
                     </div>
                 </div>
             </Link>
-        </motion.div>
+        </div>
     );
 }

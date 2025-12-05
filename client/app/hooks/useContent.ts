@@ -6,7 +6,7 @@ export const usePageContent = (slug: string) => {
     const [error, setError] = useState<any>(null);
 
     useEffect(() => {
-        fetch(`http://localhost:5000/api/v1/pages/${slug}`)
+        fetch(`/api/v1/pages/${slug}`)
             .then(res => {
                 if (!res.ok) throw new Error('Failed to fetch page');
                 return res.json();
@@ -29,7 +29,7 @@ export const useMusicTracks = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('http://localhost:5000/api/v1/music')
+        fetch('/api/v1/music')
             .then(res => res.json())
             .then(data => {
                 setTracks(data);

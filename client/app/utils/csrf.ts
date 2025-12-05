@@ -1,6 +1,6 @@
 // CSRF Token utility functions for admin routes
 const CSRF_TOKEN_KEY = 'csrfToken';
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = '';
 
 export const fetchCsrfToken = async (): Promise<string> => {
     try {
