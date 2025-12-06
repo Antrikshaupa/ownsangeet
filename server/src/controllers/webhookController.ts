@@ -14,16 +14,28 @@ export const createBlogPostWebhook = async (req: Request, res: Response) => {
         // Generate slug if not provided
         const finalSlug = slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-        const newPost = await prisma.blogPost.create({
-            data: {
-                title: sanitizeString(title),
-                content: sanitizeString(content),
-                slug: sanitizeSlug(finalSlug),
-                excerpt: excerpt ? sanitizeString(excerpt) : sanitizeString(content.substring(0, 150) + '...'),
-                featuredImageUrl: featuredImageUrl ? sanitizeUrl(featuredImageUrl) : null,
-                tags: tags ? sanitizeString(tags) : '',
-                authorType: 'ai',
-                status: 'published', // Auto-publish for now
+        const postData = {
+            title: sanitizeString(title),
+            content: sanitizeString(content),
+            slug: sanitizeSlug(finalSlug),
+            excerpt: excerpt ? sanitizeString(excerpt) : sanitizeString(content.substring(0, 150) + '...'),
+            featuredImageUrl: featuredImageUrl ? sanitizeUrl(featuredImageUrl) : null,
+            tags: tags ? sanitizeString(tags) : '',
+            authorType: 'ai' as const,
+            status: 'published' as const,
+            publishedAt: new Date()
+        };
+
+        // Use upsert to handle duplicate slugs (update if exists, create if not)
+        const newPost = await prisma.blogPost.upsert({
+            where: { slug: sanitizeSlug(finalSlug) },
+            create: postData,
+            update: {
+                title: postData.title,
+                content: postData.content,
+                excerpt: postData.excerpt,
+                featuredImageUrl: postData.featuredImageUrl,
+                tags: postData.tags,
                 publishedAt: new Date()
             }
         });
